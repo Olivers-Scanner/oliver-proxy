@@ -7,19 +7,19 @@ export default async function handler(req, res) {
     return res.status(200).end();
   }
 
-  const { interval, symbol } = req.query;
+  const { interval, symbol, apikey } = req.query;
 
   if (!interval || !symbol) {
     return res.status(400).json({ error: 'Missing interval or symbol' });
   }
 
-  const apiKey = process.env.FMP_KEY;
+  // Use server-side key if available, fall back to client-provided key
+  const apiKey = process.env.FMP_KEY || apikey;
+
   if (!apiKey) {
-    return res.status(500).json({ error: 'FMP_KEY not configured' });
+    return res.status(500).json({ error: 'No API key available' });
   }
 
-  // CORRECT: symbol is a query param, NOT a path segment
-  // e.g. /stable/historical-chart/1hour?symbol=AAPL&apikey=KEY
   const url = `https://financialmodelingprep.com/stable/historical-chart/${interval}?symbol=${symbol}&apikey=${apiKey}`;
 
   try {
